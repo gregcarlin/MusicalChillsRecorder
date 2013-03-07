@@ -1,4 +1,4 @@
-package com.gregthegeek;
+package com.gregthegeek.control;
 
 public class Chill {
   private final long start;

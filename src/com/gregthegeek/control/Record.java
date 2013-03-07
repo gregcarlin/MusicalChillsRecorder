@@ -1,4 +1,4 @@
-package com.gregthegeek;
+package com.gregthegeek.control;
 
 import java.util.ArrayList;
 
