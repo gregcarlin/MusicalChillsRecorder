@@ -15,6 +15,7 @@ import java.io.FilenameFilter;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -73,17 +74,30 @@ public class View extends JFrame {
                 if(songPlayer == null) {
                     int row = musicTable.getSelectedRow();
                     if(row < 0) {
-                        // TODO Error: no song selected
+                        error("No song selected.");
                     } else {
                         try {
                             songPlayer = new Player(new BufferedInputStream(new FileInputStream(songFiles[row])));
-                            songPlayer.play();
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        songPlayer.play();
+                                        assert songPlayer.isComplete();
+                                        songPlayer = null;
+                                        previewButton.setText("Start Preview");
+                                    } catch (JavaLayerException e) {
+                                        error("Error Reading Song.");
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }.start();
                             previewButton.setText("Stop Preview");
                         } catch (FileNotFoundException e) {
-                            // TODO Auto-generated catch block
+                            error("Song Not Found.");
                             e.printStackTrace();
                         } catch (JavaLayerException e) {
-                            // TODO Auto-generated catch block
+                            error("Error Reading Song.");
                             e.printStackTrace();
                         }
                     }
@@ -153,6 +167,10 @@ public class View extends JFrame {
 		add(saveData);
 		
 		setVisible(true);
+	}
+	
+	private void error(String message) {
+	    JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 	
 	public String getUserName() {
