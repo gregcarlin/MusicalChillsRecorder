@@ -11,8 +11,8 @@ public class Controller {
   private final View view;
   private long lastPress;
   
-  public Controller(View view) {
-      this.view = view;
+  public Controller() {
+      this.view = new View(this);
   }
   
   public void onButtonPress(String user) {
