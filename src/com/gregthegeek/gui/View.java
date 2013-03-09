@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -39,7 +39,6 @@ public class View extends JFrame {
 	private static final int HEIGHT = 500;
 	private static final int LINE_HEIGHT = 25;
 	
-	private final Controller controller;
 	private final JTextField nameField = new JTextField();
 	private final JTable musicTable;
 	private final JButton previewButton;
@@ -55,7 +54,6 @@ public class View extends JFrame {
 		setResizable(false);
 		setFocusTraversalKeysEnabled(false);
 		setFocusable(true);
-		this.controller = controller;
 		
 		// populate songFiles
 		File folder = new File("songs/");
@@ -157,7 +155,7 @@ public class View extends JFrame {
             }});
 		add(nameClear);
 		
-		// begin recording button TODO
+		// begin recording button
 		JButton beginRecording = new JButton("Begin Recording");
 		beginRecording.setFocusable(false);
 		beginRecording.setBounds(WIDTH / 2 + 15, HEIGHT / 2, nameLbl.getWidth() + nameField.getWidth() + buttonHeight, LINE_HEIGHT * 2);
@@ -166,12 +164,13 @@ public class View extends JFrame {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 requestFocusInWindow();
-                // TODO
+                stopSong();
+                playSong();
             }
 		});
 		add(beginRecording);
 		
-		// save data button TODO
+		// save data button
 		JButton saveData = new JButton("Save Data");
 		saveData.setFocusable(false);
 		saveData.setBounds(beginRecording.getX() + 10, beginRecording.getY() + beginRecording.getHeight() + 40, beginRecording.getWidth() - 20, beginRecording.getHeight());
@@ -179,8 +178,14 @@ public class View extends JFrame {
 		saveData.addActionListener(new ActionListener() {
 		    @Override
 		    public void actionPerformed(ActionEvent arg0) {
-		        // TODO
 		        requestFocusInWindow();
+		        try {
+		            JOptionPane.showOptionDialog(View.this, "Choose format.", "Save Data", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {"CSV", "TXT"}, 0);
+                    controller.saveData(Controller.SaveFormat.TXT);
+                } catch (IOException e) {
+                    error("Data could not be saved.");
+                    e.printStackTrace();
+                }
 		    }
 		});
 		add(saveData);
@@ -203,7 +208,7 @@ public class View extends JFrame {
             public void keyReleased(KeyEvent e) {
                 if(e.getKeyCode() == KeyEvent.VK_SPACE) {
                     assert !nameField.getText().isEmpty();
-                    controller.onButtonRelease(nameField.getText());
+                    controller.onButtonRelease(nameField.getText(), songFiles[currentSong].getName());
                     setBackground(new Color(237, 237, 237));
                 }
             }
@@ -254,9 +259,11 @@ public class View extends JFrame {
 	}
 	
 	private void stopSong() {
-	    songPlayer.stop();
-        songPlayer = null;
-        previewButton.setText("Start Preview");
+	    if(songPlayer != null) {
+	        songPlayer.stop();
+            songPlayer = null;
+            previewButton.setText("Start Preview");
+	    }
 	}
 	
 	private void error(String message) {
