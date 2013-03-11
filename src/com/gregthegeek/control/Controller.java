@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 public class Controller {
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private final HashMap<String, List<Record>> users = new HashMap<String, List<Record>>();
   private long lastPress;
   public enum SaveFormat {
@@ -63,7 +64,7 @@ public class Controller {
   
   private void saveCSV() throws IOException {
       BufferedWriter output = new BufferedWriter(new FileWriter("data.csv"));
-      output.write("User:Song,Start:Stop...\n");
+      output.write("User:Song,Start:Stop..." + LINE_SEPARATOR);
       for(Entry<String, List<Record>> e : users.entrySet()) {
           String user = e.getKey();
           for(Record r : e.getValue()) {
@@ -71,7 +72,7 @@ public class Controller {
               for(Chill c : r.getChills()) {
                   output.write(c.getStart() + ":" + c.getStop() + ",");
               }
-              output.write("\n");
+              output.write(LINE_SEPARATOR);
           }
       }
       output.close();
@@ -80,11 +81,11 @@ public class Controller {
   private void saveTXT() throws IOException {
       BufferedWriter output = new BufferedWriter(new FileWriter("data.txt"));
       for(Entry<String, List<Record>> e : users.entrySet()) {
-          output.write(e.getKey() + "\n"); // write username on first line
+          output.write(e.getKey() + LINE_SEPARATOR); // write username on first line
           for(Record r : e.getValue()) {
-              output.write("\t" + r.getSong() + "\n"); // write song name
+              output.write("\t" + r.getSong() + LINE_SEPARATOR); // write song name
               for(Chill c : r.getChills()) {
-                  output.write("\t\t" + c.getStart() + "-" + c.getStop() + "\n"); // write chills
+                  output.write("\t\t" + c.getStart() + "-" + c.getStop() + LINE_SEPARATOR); // write chills
               }
           }
       }
