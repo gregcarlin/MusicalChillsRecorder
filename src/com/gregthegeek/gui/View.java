@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,11 +29,12 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
+import org.jaudiotagger.audio.AudioFileIO;
+
 import com.gregthegeek.control.Controller;
 
 import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.advanced.AdvancedPlayer;
-import javazoom.jl.player.advanced.PlaybackListener;
+import javazoom.jl.player.Player;
 
 public class View extends JFrame {
 	private static final long serialVersionUID = -5534178449760746433L;
@@ -48,7 +47,7 @@ public class View extends JFrame {
 	private final JButton previewButton;
 	private final JProgressBar songProgress;
 	private File[] songFiles;
-	private AdvancedPlayer songPlayer;
+	private Player songPlayer;
 	private int currentSong;
 	private Timer progressUpdater;
 
@@ -236,16 +235,13 @@ public class View extends JFrame {
 	            error("No song selected.");
 	            return;
 	        }
-            songPlayer = new AdvancedPlayer(new BufferedInputStream(new FileInputStream(songFiles[currentSong])));
-            songPlayer.setPlayBackListener(new PlaybackListener() {});
+            songPlayer = new Player(new BufferedInputStream(new FileInputStream(songFiles[currentSong])));
             new Thread() {
                 @Override
                 public void run() {
                     try {
                         songPlayer.play();
-                        //System.out.println("after play");
-                        songPlayer = null;
-                        previewButton.setText("Start Preview");
+                        stopSong();
                     } catch (JavaLayerException e) {
                         error("Error Reading Song.");
                         e.printStackTrace();
@@ -253,34 +249,37 @@ public class View extends JFrame {
                 }
             }.start();
             previewButton.setText("Stop Preview");
-            long dur = (Long) AudioSystem.getAudioFileFormat(songFiles[currentSong]).properties().get("duration");
-            songProgress.setMaximum((int) dur);
+            int dur = AudioFileIO.read(songFiles[currentSong]).getAudioHeader().getTrackLength();
+            //System.out.printf("dur is %d%n", dur);
+            songProgress.setMaximum(dur);
             progressUpdater = new Timer();
             progressUpdater.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    // TODO
+                    if(songPlayer == null) {return;}
+                    songProgress.setValue(songPlayer.getPosition() / 1000);
+                    //System.out.printf("song position is %d%n", songPlayer.getPosition() / 1000);
                 }}, 0, 1000);
         } catch (FileNotFoundException e) {
             error("Song Not Found.");
             e.printStackTrace();
-        } catch (JavaLayerException e) {
+        } catch (Exception e) {
             error("Error Reading Song.");
-            e.printStackTrace();
-        } catch (UnsupportedAudioFileException e) {
-            error("Error Reading Song.");
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 	}
 	
 	private void stopSong() {
 	    if(songPlayer != null) {
-	        songPlayer.stop();
+	        progressUpdater.cancel();
+	        progressUpdater = null;
+	        
+	        songPlayer.close();
             songPlayer = null;
+            
             previewButton.setText("Start Preview");
+            
+            songProgress.setValue(songProgress.getMaximum());
 	    }
 	}
 	
