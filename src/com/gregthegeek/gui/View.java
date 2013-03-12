@@ -15,7 +15,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -42,9 +46,11 @@ public class View extends JFrame {
 	private final JTextField nameField = new JTextField();
 	private final JTable musicTable;
 	private final JButton previewButton;
+	private final JProgressBar songProgress;
 	private File[] songFiles;
 	private AdvancedPlayer songPlayer;
 	private int currentSong;
+	private Timer progressUpdater;
 
 	public View(final Controller controller) {
 		super("Musical Chills Recorder");
@@ -107,7 +113,7 @@ public class View extends JFrame {
 		add(previewButton);
 		
 		// progress bar to show song progress
-		JProgressBar songProgress = new JProgressBar();
+		songProgress = new JProgressBar();
 		songProgress.setFocusable(false);
 		songProgress.setBounds(15, restartButton.getY() + restartButton.getHeight() + 10, previewButton.getX() + previewButton.getWidth(), LINE_HEIGHT);
 		add(songProgress);
@@ -231,9 +237,7 @@ public class View extends JFrame {
 	            return;
 	        }
             songPlayer = new AdvancedPlayer(new BufferedInputStream(new FileInputStream(songFiles[currentSong])));
-            songPlayer.setPlayBackListener(new PlaybackListener() {
-                
-            });
+            songPlayer.setPlayBackListener(new PlaybackListener() {});
             new Thread() {
                 @Override
                 public void run() {
@@ -249,11 +253,25 @@ public class View extends JFrame {
                 }
             }.start();
             previewButton.setText("Stop Preview");
+            long dur = (Long) AudioSystem.getAudioFileFormat(songFiles[currentSong]).properties().get("duration");
+            songProgress.setMaximum((int) dur);
+            progressUpdater = new Timer();
+            progressUpdater.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    // TODO
+                }}, 0, 1000);
         } catch (FileNotFoundException e) {
             error("Song Not Found.");
             e.printStackTrace();
         } catch (JavaLayerException e) {
             error("Error Reading Song.");
+            e.printStackTrace();
+        } catch (UnsupportedAudioFileException e) {
+            error("Error Reading Song.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 	}
