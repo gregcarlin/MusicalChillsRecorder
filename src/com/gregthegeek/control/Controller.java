@@ -11,18 +11,21 @@ import java.util.Map.Entry;
 public class Controller {
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   private final HashMap<String, List<Record>> users = new HashMap<String, List<Record>>();
-  private long lastPress;
+  private int lastPress;
   public enum SaveFormat {
       CSV,
       TXT;
   }
   
-  public void onButtonPress(String user) {
-    lastPress = System.currentTimeMillis();
+  public void onButtonPress(String user, int songDur) {
+      if(lastPress < 0) {
+          lastPress = songDur;
+      }
   }
   
-  public void onButtonRelease(String user, String song) {
-    addChill(user, song, lastPress, System.currentTimeMillis());
+  public void onButtonRelease(String user, String song, int songDur) {
+      addChill(user, song, lastPress, songDur);
+      lastPress = -1;
   }
   
   private void addChill(String user, String song, long start, long stop) {
