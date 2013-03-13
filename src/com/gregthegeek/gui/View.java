@@ -203,7 +203,7 @@ public class View extends JFrame {
                     if(name.isEmpty()) {
                         error("No name entered.");
                     } else {
-                        setBackground(Color.RED);
+                        getContentPane().setBackground(Color.RED);
                         controller.onButtonPress(name);
                     }
                 }
@@ -214,7 +214,7 @@ public class View extends JFrame {
                 if(e.getKeyCode() == KeyEvent.VK_SPACE) {
                     assert !nameField.getText().isEmpty();
                     controller.onButtonRelease(nameField.getText(), songFiles[currentSong].getName());
-                    setBackground(new Color(237, 237, 237));
+                    getContentPane().setBackground(new Color(237, 237, 237));
                 }
             }
 

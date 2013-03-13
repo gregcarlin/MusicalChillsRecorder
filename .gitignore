@@ -2,3 +2,7 @@
 .classpath
 bin/
 songs/
+songs
+data.txt
+data.csv
+
