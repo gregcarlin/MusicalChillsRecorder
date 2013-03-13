@@ -185,8 +185,8 @@ public class View extends JFrame {
 		    public void actionPerformed(ActionEvent arg0) {
 		        requestFocusInWindow();
 		        try {
-		            JOptionPane.showOptionDialog(View.this, "Choose format.", "Save Data", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {"CSV", "TXT"}, 0);
-                    controller.saveData(Controller.SaveFormat.TXT);
+		            int rt = JOptionPane.showOptionDialog(View.this, "Choose format.", "Save Data", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] {"CSV", "TXT"}, 0);
+		            controller.saveData(Controller.SaveFormat.values()[rt]);
                 } catch (IOException e) {
                     error("Data could not be saved.");
                     e.printStackTrace();
